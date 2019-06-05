@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="stylesheet.css">
+    <title></title>
+  </head>
+  <body>
+    <div id="app">
+      <template v-if="screen === 'start'">
+        <h1> SpeedMaths </h1>
+        <div v-on:click="screen = 'difficulty'" class="textboxes">
+          <p id="bigtext"> Start</p>
+        </div>
+      </template>
+      <template v-if="screen === 'difficulty'">
+        <h1> SpeedMaths </h1>
+        <div  v-on:click="questionChange({timer: 0})" id='Easy' class="textboxes">
+          <p id="bigtext">Easy</p>
+        </div>
+        <div v-on:click="questionChange({timer: 20})" id='Medium' class="textboxes">
+          <p id="bigtext">Medium<p>
+        </div>
+        <div v-on:click="questionChange({timer: 10})" id='Hard'class="textboxes">
+          <p id="bigtext"> Hard </p>
+        </div>
+      </template>
+      <template v-if="screen === 'question'">
+        <h1> Question: {{questionNumber}}</h1>
+        <template v-if="timer > 0">
+          <p id="Display" style="position: absolute; top: 2px; left: 110px;"> Time Remaining = {{timer}} </p>
+
+        </template>
+        <p id="questiontext">What is... <span class="questiondisplay">{{question}}</span></p>
+        <input v-model = "userInput" id="wow" type="number" name="userNumber" style="width: 300px; height: 30px; position: relative; right: -15px;">
+       </input>
+        <div v-on:click="answerCheck()" class="textboxes">
+          <p id="bigtext">Enter </p>
+        </div>
+      </template>
+      <template v-if="screen === 'end'">
+        <h1> Results:</h1>
+        <p id="results">{{score}} out of 10 ! </p>
+        <div v-on:click="reloadPage()" class="textboxes">
+          <p id="bigtext"> Return</p>
+        </div>
+      </template>
+    </div>
+    <script>
+      let app = new Vue({
+        el: '#app',
+        data: {
+          symbolArray: ["+", "-", "/", "*"],
+          screen: 'difficulty',
+          num1: "",
+          num2: "0",
+          operator: "",
+          questionNumber: '0',
+          userInput: "",
+          answer: "",
+          score: 0,
+          timer: 0
+        },
+        methods: {
+
+          reloadPage: function() {
+            window.location.reload()
+
+          },
+
+          questionChange: function(data) {
+            this.screen = 'question'
+            this.timer = data.timer;
+            this.runCountdown(data);
+            this.generateQuestion();
+
+          },
+          runCountdown: function(data) {
+            if (this.timer>0) {
+              setTimeout( () => {
+                this.a = setInterval( () => {
+                data.timer--;
+                console.log("yes");
+                document.getElementById("Display").textContent = `Time Remaining = ${data.timer}`;
+                if(data.timer <= 0) {
+                  clearInterval(this.a);
+                  this.userInput = 0;
+                  this.answerCheck();
+
+                }},1000);
+              },1)
+
+            }
+          },
+          randomNum: function(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min)) + min;
+          },
+          generateQuestion: function() {
+            this.operator = this.symbolArray[this.randomNum(1,4)]
+            this.num1 = this.randomNum(1,12).toString()
+            if (this.operator === this.symbolArray[1]){
+                this.num2 = this.randomNum(0,this.num1).toString()
+            }else {
+              this.num2 = this.randomNum(1,12).toString()
+            }
+            this.questionNumber++;
+            if (this.questionNumber > 10) {
+              this.screen = "end"
+
+              //run function endscreen
+            }
+
+
+            this.userInput = ""
+            this.question = this.num1 + this.operator + this.num2
+            this.answer = eval(this.question)
+          },
+          answerCheck: function() {
+            console.log(
+              this.userInput, ":",
+              this.answer
+            )
+            clearInterval(this.a);
+            if (parseInt(this.userInput) === parseInt(this.answer)){
+              alert("YAYYYYY | Correct!")
+              wow.style.boxShadow = "30px 20px 20px 0px rgba(0, 255, 0, 0.5)"
+              setTimeout( () => {
+                wow.style.boxShadow = ""
+              }, 4000)
+              this.score++
+            }else {
+              alert("Nooooo! | Incorrect")
+              wow.style.boxShadow = "30px 20px 30px 0px rgba(255, 0, 0 , 0.5)"
+              setTimeout( () => {
+                wow.style.boxShadow = ""
+              }, 4000)
+            }
+            this.generateQuestion();
+            this.runCountdown({timer: this.timer});
+
+          }
+        }
+      })
+    </script>
+  </body>
+</html>
